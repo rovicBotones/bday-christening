@@ -33,7 +33,11 @@
         <div class="container mt-4">
             <div class="row g-3" id="imageCards">
             </div>
+            <nav class="mt-4">
+                <ul class="pagination" id="pagination"></ul>
+            </nav>
         </div>
+   
 
 
     </main>
@@ -47,7 +51,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 
 <script>
-    
+    const pagination = document.getElementById("pagination");
+
+    const ITEMS_PER_PAGE = 25;
+    let currentPage = 1;
     
     const listOfImageIds = [
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
@@ -105,15 +112,97 @@
         521, 522, 523, 524, 525, 526, 527, 528, 529, 530,
         531, 532, 533, 534, 535, 536, 537, 538, 539
     ];
-    const container = document.getElementById("imageCards");
-    listOfImageIds.forEach(i => {
-        container.innerHTML += `
-             <div class="col-6 ">
-                    <div class="card" style="height: auto;">
-                        <img src="photos/EDITED-${i}.jpg" class="card-img-top" style="object-fit: cover;">
-                    </div>
-                </div>
-        `
-    });
+    const totalPages = Math.ceil(listOfImageIds.length / ITEMS_PER_PAGE);
     
+    
+     function renderPage(page) {
+        
+        const container = document.getElementById("imageCards");
+        container.innerHTML = ""; // clear images
+
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        const pageItems = listOfImageIds.slice(start, end);
+        console.log("pageItems: ", pageItems);
+        // pageItems.forEach(i => {
+        //     container.innerHTML += `
+        //         <div class="col-6">
+        //             <div class="card" style="height: auto;">
+        //                 <img src="photos/EDITED-${i}.jpg" class="card-img-top" style="object-fit: cover;">
+        //             </div>
+        //         </div>
+        //     `;
+        // });
+        pageItems.forEach(i => {
+            container.innerHTML += `
+                 <div class="col-6 ">
+                        <div class="card" style="height: auto;">
+                            <img src="photos/EDITED-${i}.jpg" class="card-img-top" style="object-fit: cover;">
+                        </div>
+                    </div>
+            `
+        });
+
+        renderPagination();
+    }
+
+    function renderPagination() {
+        pagination.innerHTML = "";
+        const totalPages = Math.ceil(listOfImageIds.length / ITEMS_PER_PAGE);
+
+        // Prev Button
+        pagination.innerHTML += `
+            <li class="page-item ${currentPage === 1 ? "disabled" : ""}">
+                <a class="page-link" href="#" onclick="goToPage(${currentPage - 1})">Previous</a>
+            </li>
+        `;
+
+        let pagesToShow = [];
+
+        // Always show first page
+        pagesToShow.push(1);
+
+        // Show previous page if possible
+        if (currentPage - 1 > 1) pagesToShow.push(currentPage - 1);
+
+        // Show current page
+        if (currentPage !== 1 && currentPage !== totalPages) pagesToShow.push(currentPage);
+
+        // Show next page if possible
+        if (currentPage + 1 < totalPages) pagesToShow.push(currentPage + 1);
+
+        // Always show last page
+        if (totalPages > 1) pagesToShow.push(totalPages);
+
+        // Limit to max 4 tabs
+        pagesToShow = [...new Set(pagesToShow)].sort((a, b) => a - b).slice(0, 4);
+
+        // Generate page buttons
+        pagesToShow.forEach(p => {
+            pagination.innerHTML += `
+                <li class="page-item ${currentPage === p ? "active" : ""}">
+                    <a class="page-link" href="#" onclick="goToPage(${p})">${p}</a>
+                </li>
+            `;
+        });
+
+        // Next Button
+        pagination.innerHTML += `
+            <li class="page-item ${currentPage === totalPages ? "disabled" : ""}">
+                <a class="page-link" href="#" onclick="goToPage(${currentPage + 1})">Next</a>
+            </li>
+        `;
+    }
+
+    function goToPage(page) {
+        const totalPages = Math.ceil(listOfImageIds.length / ITEMS_PER_PAGE);
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        renderPage(page);
+    }
+
+    // Load first page
+    renderPage(1);
+
+
 </script>
